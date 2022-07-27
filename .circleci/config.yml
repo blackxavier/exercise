@@ -82,7 +82,7 @@ jobs:
       - checkout
       - run:
           name: stimulate error 
-          command: return 2022
+          command: return 1
       - destroy_environment
 
 # Sequential workflow
