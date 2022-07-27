@@ -12,7 +12,7 @@ commands:
 
 
 jobs:
-  myjob1:  # Choose any name, such as `build`
+  myjob:  # Choose any name, such as `build`
       # The primary container, where your job's commands will run
       docker:
         - image: circleci/node:13.8.0
@@ -94,7 +94,7 @@ workflows:
   # Name the workflow
   default:
     jobs:
-      - myjob1
+      - myjob
       # - create-infrastructure
       - configure_infrastructure
       - smoke_test
@@ -102,4 +102,4 @@ workflows:
           requires:
             - configure_infrastructure
             - smoke_test
-            - myjob1
+            - myjob
