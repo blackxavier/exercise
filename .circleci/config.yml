@@ -1,5 +1,13 @@
 version: 2.1
 # Use a package of configuration called an orb.
+commands:
+  destroy_environment:
+    steps:
+      - run:
+          name: Destroy environment command
+          command: |
+            aws cloudformation delete-stack --stack-name prod-${CIRCLE_WORKFLOW_ID}
+
 orbs:
   aws-cli: circleci/aws-cli@2.0.3
 jobs:
@@ -9,7 +17,7 @@ jobs:
         - image: circleci/node:13.8.0
       steps:
         - checkout # check out the code in the project directory
-        - run: echo "hello world" # run the `echo` command
+        - run: echo "DevOps guy" # run the `echo` command
 
   create-infrastructure:
       docker:
@@ -23,6 +31,9 @@ jobs:
                 --template-file template.yml \
                 --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
                 --region us-east-1
+        - destroy_environment:
+            when:
+              on_fail
     
     # Exercise: Config and Deployment
   configure_infrastructure: 
@@ -41,6 +52,9 @@ jobs:
           name: Run Playbook and Configure server
           command: |
             ansible-playbook -i inventory main-remote.yml
+      - destroy_environment:
+          when:
+            on_fail
   
   smoke_test:
     docker:
@@ -58,6 +72,21 @@ jobs:
             else
               return 1
             fi
+      - destroy_environment:
+          when:
+            on_fail
+
+  failed_job_that_does_rollback:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: stimulate error 
+          command: return 2022
+      - destroy_environment:
+          when:
+            on_fail
 
 # Sequential workflow
 workflows:
@@ -68,3 +97,8 @@ workflows:
       # - create-infrastructure
       - configure_infrastructure
       - smoke_test
+      - failed_job_that_does_rollback:
+          requires:
+            - configure_infrastructure
+            - smoke_test
+            - myjob1
