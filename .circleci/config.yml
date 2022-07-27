@@ -92,7 +92,7 @@ jobs:
 # Sequential workflow
 workflows:
   # Name the workflow
-  myWorkflow:
+  default:
     jobs:
       - myjob1
       # - create-infrastructure
